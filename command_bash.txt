@@ -1,0 +1,8 @@
+I#!/bin/bash
+clear
+git add .
+git commit -m "Initial commit"
+git push heroku master
+heroku logs -t
+
+
