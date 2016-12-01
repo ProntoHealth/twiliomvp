@@ -46,6 +46,14 @@ def send_sms(to_number, message_body):
         body=message_body    
     ) 
 
+def message_client(message_body, previous_message):
+    twml = twiml.Response()
+    twml.message(message_body)
+
+    resp = make_response(str(twml))
+
+    expires = datetime.utcnow() + timedelta(hours=4)
+    resp.set_cookie('previous_message', value= str(previous_message), expires=expires.strftime('%a, %d %b %Y %H:%M:%S GMT'))
 # def send_email(to_email, from_number, message_body):
 #     sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
 #     from_email = velina_email
@@ -72,7 +80,11 @@ def receieve_sms():
     from_number = request.values.get('From', None)
     body = request.values.get('Body', '')
     forward = "Response from {}: {}".format(from_number, body)
+    previous_message = request.cookies.get('previous_message', 'None')
     to_number = from_number 
+
+    text_return = 'Your previous message was {}'.format(previous_message)
+    message_client(text_return, body)
 
     time = None
     if body.find('pm') > -1 or body.find('am') > -1:
@@ -91,7 +103,7 @@ def receieve_sms():
     if time:
         if body.find('before') > -1:
 
-            forward = 'Ok, you are scheduled for {}'
+            forward = 'Ok, you are scheduled for {}'.format(time)
 
     if body.lower() == 'yes':
         forward = 'Please text back days next week (Monday-Friday) during which you would be able to schedule an appointment, "where" if you would like to know where the clinic is located, or "more info" if you have questions about insurance or other details.'
