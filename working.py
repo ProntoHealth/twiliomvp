@@ -134,7 +134,7 @@ def receieve_sms():
                 send_sms(to_number, update_log)
                 return 'OK' 
 
-    if str(appt['day']) == '-1':
+    if str(appt['day']) == 'Tuesday':
         hold=True
         wanted_days = []
         fulldate=None
