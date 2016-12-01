@@ -134,18 +134,18 @@ def receieve_sms():
                 send_sms(to_number, update_log)
                 return 'OK' 
 
-    # if appt['day'] == -1:
-    #     wanted_days = []
-    #     fulldate=None
-    #     for (key, abbrev) in [(key, abbrev) for key, abbrevs in days.items() for abbrev in abbrevs[1]]:
-    #         if body.find(abbrev) > -1:
-    #             wanted_days.append(key)
+    if appt['day'] == -1:
+        wanted_days = []
+        fulldate=None
+        for (key, abbrev) in [(key, abbrev) for key, abbrevs in days.items() for abbrev in abbrevs[1]]:
+            if body.find(abbrev) > -1:
+                wanted_days.append(key)
 
-    #             weekday = wanted_days[0]
-    #             weekday_num = (days[weekday][0]+1)%7
-    #             fulldate = datetime.strptime('2016-{}-{}'.format(next_week,weekday_num), '%Y-%W-%w')
-    #             date = fulldate.day
-    #             month = fulldate.month
+                weekday = wanted_days[0]
+                weekday_num = (days[weekday][0]+1)%7
+                fulldate = datetime.strptime('2016-{}-{}'.format(next_week,weekday_num), '%Y-%W-%w')
+                monthdate = fulldate.day
+                month = fulldate.month
 
     #     if body.find('12/') > -1:
     #         date_text = body[body.find('12/'):body.find('12/')+6]
@@ -155,10 +155,10 @@ def receieve_sms():
     #         date = fulldate.day
     #         month = fulldate.month
 
-    #     if fulldate:
-    #         appt['day'] = weekday
-    #         appt['date'] = date
-    #         appt['month'] = month
+        if fulldate:
+            appt['day'] = weekday
+            appt['date'] = monthdate
+            appt['month'] = month
 
     
 
