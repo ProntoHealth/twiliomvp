@@ -147,13 +147,13 @@ def receieve_sms():
                 monthdate = fulldate.day
                 month = fulldate.month
 
-    #     if body.find('12/') > -1:
-    #         date_text = body[body.find('12/'):body.find('12/')+6]
-    #         date_text2 = date_text.split(' ')[0]
-    #         fulldate = datetime.strptime('{}/2016'.format(date_text2), '%m/%d/%Y')
-    #         weekday = date.strftime('%A')
-    #         date = fulldate.day
-    #         month = fulldate.month
+        if body.find('12/') > -1:
+            date_text = body[body.find('12/'):body.find('12/')+6]
+            date_text2 = date_text.split(' ')[0]
+            fulldate = datetime.strptime('{}/2016'.format(date_text2), '%m/%d/%Y')
+            weekday = date.strftime('%A')
+            monthdate = fulldate.day
+            month = fulldate.month
 
         if fulldate:
             appt['day'] = weekday
