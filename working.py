@@ -17,10 +17,11 @@ from_number = "+19092199424"
 lynn_number = "+19095291698"
 velina_number = '+18036736204'
 velina_email = 'velina.kozareva@gmail.com'
-days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-days_seg = []
-months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-#numbers = []
+days = {'Monday':[1, ['monday', 'mon'], 'Tuesday': [2, ['tuesday', 'tues', 'tue']], 'Wednesday': [3, ['wednesday', 'wed']], 
+        'Thursday': [4, ['thursday', 'thurs', 'thur']], 'Friday': [5, ['friday', 'fri']], 'Saturday': [6, ['saturday', 'sat']],
+        'Sunday': [0, ['sunday', 'sun']]}    
+months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
+
 #FIREBASE_URL = "https://pronto-health.firebaseio.com/"
 #fb = firebase.FirebaseApplication(FIREBASE_URL, None) # Create a reference to the Firebase Application
 
@@ -33,10 +34,6 @@ months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'Augus
     user_details = fb.get('/user', sender)
  
 """
-# @app.route("/")
-# def index():
-#   return "Hello World"
-
 
 client = TwilioRestClient(account_sid, auth_token)
 def send_sms(to_number, message_body):
@@ -46,15 +43,105 @@ def send_sms(to_number, message_body):
         body=message_body    
     ) 
 
-def message_client(message_body, previous_message):
+def message_client(message_body, message_log, appt_set):
     twml = twiml.Response()
     twml.message(message_body)
 
     resp = make_response(str(twml))
 
     expires = datetime.utcnow() + timedelta(hours=4)
-    resp.set_cookie('previous_message', value= str(previous_message), expires=expires.strftime('%a, %d %b %Y %H:%M:%S GMT'))
+    resp.set_cookie('message_log', value= str(message_log), expires=expires.strftime('%a, %d %b %Y %H:%M:%S GMT'))
+    resp.set_cookie('appt_set', value= str(appt_set), expires=expires.strftime('%a, %d %b %Y %H:%M:%S GMT'))
     return resp
+
+@app.route("/", methods=['GET', 'POST'])
+def receieve_sms():
+    report_back = False
+
+    from_number = request.values.get('From', None)
+    body = request.values.get('Body', '')
+    response = 'hello'
+    previous_message = request.cookies.get('previous_message', 'None')
+    message_log = request.cookies.get('message_log', '')
+    appt_set = request.cookies.get('appt_set', '')
+    to_number = velina_number 
+
+    update_appt = '{} {}'.format(appt_set, '')
+
+    if body.lower().find('between') > -1 or body.lower().find('help') > -1 or body.lower().find('options') > -1:
+        update_log = '{} \n {} \n {}'.format(message_log, body, 'AWAITING RESPONSE')
+        send_sms(to_number, update_log)
+
+    update_log = '{} \n {} \n {}'.format(message_log, body, response)
+    twiml_body = message_client(response, update_log, update_appt)
+
+    wanted_days = []
+    for (key, abbrev) in [(key, abbrev) for key, abbrevs in days.items() for abbrev in abbrevs[1]]:
+        if body.lower().find(abbrev) > -1:
+            wanted_days.append(key)
+
+
+    #if 
+
+
+    time = None
+    wanted_time = {}
+    if body.find('am') > -1 or body.find('pm') > -1:
+        time_pos = body.find('am') or body.find('pm')
+        if body.find(':') > -1:
+            # +6 to account for space between time and 'pm'/'am'
+            time = {
+                'text': body[body.find(':')-1:body.find(':')+6],
+                'hour': int(body[body.find(':')-1]),
+                'minute': int(body[body.find(':')+1:body.find(':')+3]),
+            }
+        else:
+            time = {
+                'text': body[time_pos-1:time_pos+3],
+                'hour': int(body[time_pos-1]),
+                'minute': 0,
+            }
+        time['add'] = body[time_pos:time_pos+3]
+    else:
+        if body.find(':') > -1:
+            time = {
+                'text': body[body.find(':')-1:body.find(':')+3],
+                'hour': int(body[body.find(':')-1]),
+                'minute': int(body[body.find(':')+1:body.find(':')+3]),
+                'add': ''
+            }
+    if time:
+        if body.lower().find('before') > -1:
+            time['hour'] = time['hour'] - 1
+            #response = 'Ok, you are scheduled for {}'.format(time)
+        elif body.lower().find('after') > -1:
+            time['hour'] = time['hour'] + 1
+        else:
+            time['hour']
+
+    if body.lower() == 'yes':
+        response = 'Please text back days next week (Monday-Sunday) during which you would be able to schedule an appointment, or "more options" if next week does not work for you.'
+    
+    if body.lower().find('where') >-1:
+        response = response + '\n We are located at 13768 Roswell Ave. in Chino off the 71'
+    else:
+        response = "Response from {}: {}".format(from_number, body)
+        to_number = velina_number
+
+    #send_sms(to_number, response)
+    #send_email(velina_email, from_number, response)
+    
+    return twiml_body if twiml_body else "OK"
+    
+if __name__ == "__main__":
+    app.run(debug=True)
+
+ # resp = twilio.twiml.Response()
+    # resp.message("Hello, Mobile Monkey")
+    # return str(resp)
+
+# attempted email code
+
 # def send_email(to_email, from_number, message_body):
 #     sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
 #     from_email = velina_email
@@ -75,55 +162,3 @@ def message_client(message_body, previous_message):
 #     s = smtplib.SMTP('localhost')
 #     s.sendmail(from_email, to_email, msg.as_string())
 #     s.quit()
-
-@app.route("/", methods=['GET', 'POST'])
-def receieve_sms():
-    from_number = request.values.get('From', None)
-    body = request.values.get('Body', '')
-    forward = "Response from {}: {}".format(from_number, body)
-    previous_message = request.cookies.get('previous_message', 'None')
-    to_number = from_number 
-
-    text_return = 'Your previous message was {}'.format(previous_message)
-    twiml_body = message_client(text_return, body)
-
-    time = None
-    if body.find('pm') > -1 or body.find('am') > -1:
-        if body.find(':') > -1:
-            # +6 to account for space between time and 'pm'/'am'
-            time = {
-                'text': body[body.find(':')-1:body.find(':')+6],
-                'hour': int(body[body.find(':')-1])
-            }
-        else:
-            time_pos = body.find('pm') or body.find('am')
-            time = {
-                'text': body[time_pos-1:time_pos+3],
-                'hour': int(body[time_pos-1])
-            }
-    if time:
-        if body.find('before') > -1:
-
-            forward = 'Ok, you are scheduled for {}'.format(time)
-
-    if body.lower() == 'yes':
-        forward = 'Please text back days next week (Monday-Friday) during which you would be able to schedule an appointment, "where" if you would like to know where the clinic is located, or "more info" if you have questions about insurance or other details.'
-    elif body.lower().find('where') >-1:
-        forward = 'We are located at 13768 Roswell Ave. in Chino off the 71. Please text back days (Monday-Friday) during which you would be able to schedule an appointment, or "more info" if you have further questions.'
-    else:
-        forward = "Response from {}: {}".format(from_number, body)
-        to_number = velina_number
-
-    #send_sms(to_number, forward)
-    #send_email(velina_email, from_number, forward)
-    
-    return twiml_body if twiml_body else "OK"
-
-    # resp = twilio.twiml.Response()
-    # resp.message("Hello, Mobile Monkey")
-    # return str(resp)
-
-    
-if __name__ == "__main__":
-    app.run(debug=True)
-    
