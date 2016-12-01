@@ -124,7 +124,7 @@ def receieve_sms():
     
     all_info_here = True if appt['time'] != -1 and appt['day'] != -1 else False
 
-    if appt['time'] == 'NA':
+    if str(appt['time']) == 'NA':
         wanted_time = get_time(body)
         if wanted_time:
             if wanted_time['hour'] in range(8,12) and wanted_time['add'] != 'pm':
@@ -134,7 +134,7 @@ def receieve_sms():
                 send_sms(to_number, update_log)
                 return 'OK' 
 
-    if appt['day'] == 'NA':
+    if str(appt['day']) == 'NA':
         hold=True
         wanted_days = []
         fulldate=None
@@ -173,7 +173,7 @@ def receieve_sms():
         return twiml_body
     if body == 'confirmed':
         response = response + 'Great, you are confirmed for {} {}/{} at {}. We will be in touch.'.format(appt['day'], appt['month'], appt['day'], appt['time'])
-    elif appt['day'] != 'NA' and appt['time'] == 'NA':
+    elif str(appt['day']) != 'NA' and str(appt['time']) == 'NA':
         response = response + 'What time on {} would work well for you? Please note we recommend a morning appointment because you will need to fast for 8 hours in advance. The clinic is open 8 am to 5 pm.'.format(appt['day'])
     elif appt['day'] != 'NA' and appt['time'] != 'NA':
         if all_info_here:
