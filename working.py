@@ -108,7 +108,7 @@ def receieve_sms():
     message_log = request.cookies.get('message_log', '')
     
     for requirement in requirements:
-        appt[requirement] = request.cookies.get('appt_{}'.format(requirement), 'NA')
+        appt[requirement] = request.cookies.get('appt_{}'.format(requirement), '-1')
    
     to_number = velina_number 
 
@@ -122,9 +122,9 @@ def receieve_sms():
     if body.find('where') >-1:
         response = response + '\n We are located at 13768 Roswell Ave. in Chino off the 71.'
     
-    all_info_here = True if appt['time'] != 'NA' and appt['day'] != 'NA' else False
+    all_info_here = True if appt['time'] != '-1' and appt['day'] != '-1' else False
 
-    if str(appt['time']) == 'NA':
+    if str(appt['time']) == '-1':
         wanted_time = get_time(body)
         if wanted_time:
             if wanted_time['hour'] in range(8,12) and wanted_time['add'] != 'pm':
@@ -134,7 +134,7 @@ def receieve_sms():
                 send_sms(to_number, update_log)
                 return 'OK' 
 
-    if str(appt['day']) == 'NA':
+    if str(appt['day']) == '-1':
         hold=True
         wanted_days = []
         fulldate=None
@@ -173,9 +173,9 @@ def receieve_sms():
         return twiml_body
     if body == 'confirmed':
         response = response + 'Great, you are confirmed for {} {}/{} at {}. We will be in touch.'.format(appt['day'], appt['month'], appt['day'], appt['time'])
-    elif str(appt['day']) != 'NA' and str(appt['time']) == 'NA':
+    elif str(appt['day']) != '-1' and str(appt['time']) == '-1':
         response = response + 'What time on {} would work well for you? Please note we recommend a morning appointment because you will need to fast for 8 hours in advance. The clinic is open 8 am to 5 pm.'.format(appt['day'])
-    elif appt['day'] != 'NA' and appt['time'] != 'NA':
+    elif appt['day'] != '-1' and appt['time'] != '-1':
         if all_info_here:
             update_log = '{} --{} --{}'.format(message_log, body, str(appt['day']))
             send_sms(to_number, update_log)
