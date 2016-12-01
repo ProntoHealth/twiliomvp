@@ -166,7 +166,7 @@ def receieve_sms():
         response = response + "Please text back days next week (Monday-Sunday) when you're free for an appointment, or 'more options' if next week does not work for you."
     
     if body == 'confirmed':
-        response = response + "Great, you're confirmed for {} {}/{} at {}. We'll be in touch."format(appt['day'], appt['month'], appt['day'], appt['time'])
+        response = response + 'Great, you are confirmed for {} {}/{} at {}. We will be in touch.'.format(appt['day'], appt['month'], appt['day'], appt['time'])
     elif appt['day'] != -1 and appt['time'] == -1:
         response = response + 'What time on {} would work well for you? Please note we recommend a morning appointment because you will need to fast for 8 hours in advance. The clinic is open 8 am to 5 pm.'.format(appt['day'])
     elif appt['day'] != -1 and appt['time'] != -1:
