@@ -177,7 +177,7 @@ def receieve_sms():
         response = response + 'What time on {} would work well for you? Please note we recommend a morning appointment because you will need to fast for 8 hours in advance. The clinic is open 8 am to 5 pm.'.format(appt['day'])
     elif appt['day'] != 'NA' and appt['time'] != 'NA':
         if all_info_here:
-            update_log = '{} --{} --{}'.format(message_log, body, str(appt['day']) == 'NA')
+            update_log = '{} --{} --{}'.format(message_log, body, type(str(appt['day'])))
             send_sms(to_number, update_log)
             return 'OK'
         else:
