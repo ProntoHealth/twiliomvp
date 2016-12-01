@@ -5,7 +5,7 @@ import twilio.twiml
 from twilio.rest import TwilioRestClient
 import sendgrid
 import os
-from sendgrid.helpers.mail import *
+#from sendgrid.helpers.mail import *
 # import smtplib
 # from email.mime.text import MIMEText
 
