@@ -122,7 +122,7 @@ def receieve_sms():
     if body.find('where') >-1:
         response = response + '\n We are located at 13768 Roswell Ave. in Chino off the 71.'
     
-    all_info_here = True if appt['time'] != -1 and appt['day'] != -1 else False
+    all_info_here = True if appt['time'] != 'NA' and appt['day'] != 'NA' else False
 
     if str(appt['time']) == 'NA':
         wanted_time = get_time(body)
@@ -177,7 +177,7 @@ def receieve_sms():
         response = response + 'What time on {} would work well for you? Please note we recommend a morning appointment because you will need to fast for 8 hours in advance. The clinic is open 8 am to 5 pm.'.format(appt['day'])
     elif appt['day'] != 'NA' and appt['time'] != 'NA':
         if all_info_here:
-            update_log = '{} --{} --{}'.format(message_log, body, type(appt['day']))
+            update_log = '{} --{} --{}'.format(message_log, body, str(appt['day']) == 'NA')
             send_sms(to_number, update_log)
             return 'OK'
         else:
