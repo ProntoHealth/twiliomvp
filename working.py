@@ -4,7 +4,7 @@ from flask import Flask, request, redirect
 import twilio.twiml
 from twilio.rest import TwilioRestClient
 import sendgrid
-import os
+# import os
 #from sendgrid.helpers.mail import *
 # import smtplib
 # from email.mime.text import MIMEText
