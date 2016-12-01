@@ -69,15 +69,15 @@ def receieve_sms():
     from_number = request.values.get('From', None)
     body = request.values.get('Body', None)
     forward = "Response from {}: {}".format(from_number, body)
-    to_number = from_number 
+    to_number = velina_number 
 
-    if body.lower() == 'yes':
-        forward = 'Please text back days next week (Monday-Friday) during which you would be able to schedule an appointment, "where" if you would like to know where the clinic is located, or "more info" if you have questions about insurance or other details.'
-    elif 'where' in body.lower().split(' '):
-        forward = 'We are located at 13768 Roswell Ave. in Chino off the 71. Please text back days (Monday-Friday) during which you would be able to schedule an appointment, or "more info" if you have further questions.'
-    else:
-        forward = "Response from {}: {}".format(from_number, body)
-        to_number = velina_number
+    # if body.lower() == 'yes':
+    #     forward = 'Please text back days next week (Monday-Friday) during which you would be able to schedule an appointment, "where" if you would like to know where the clinic is located, or "more info" if you have questions about insurance or other details.'
+    # elif 'where' in body.lower().split(' '):
+    #     forward = 'We are located at 13768 Roswell Ave. in Chino off the 71. Please text back days (Monday-Friday) during which you would be able to schedule an appointment, or "more info" if you have further questions.'
+    # else:
+    #     forward = "Response from {}: {}".format(from_number, body)
+    #     to_number = velina_number
 
     send_sms(to_number, forward)
     #send_email(velina_email, from_number, forward)
