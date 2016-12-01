@@ -3,7 +3,7 @@
 from flask import Flask, request, redirect, make_response
 from twilio import twiml
 from twilio.rest import TwilioRestClient
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 # import sendgrid
 # import os
 # from sendgrid.helpers.mail import *
@@ -17,10 +17,11 @@ from_number = "+19092199424"
 lynn_number = "+19095291698"
 velina_number = '+18036736204'
 velina_email = 'velina.kozareva@gmail.com'
-days = {'Monday':[1, ['monday', 'mon']], 'Tuesday': [2, ['tuesday', 'tues', 'tue']], 'Wednesday': [3, ['wednesday', 'wed']], 
-        'Thursday': [4, ['thursday', 'thurs', 'thur']], 'Friday': [5, ['friday', 'fri']], 'Saturday': [6, ['saturday', 'sat']],
-        'Sunday': [0, ['sunday', 'sun']]}    
+days = {'Monday':[0, ['monday', 'mon']], 'Tuesday': [1, ['tuesday', 'tues', 'tue']], 'Wednesday': [2, ['wednesday', 'wed']], 
+        'Thursday': [3, ['thursday', 'thurs', 'thur']], 'Friday': [4, ['friday', 'fri']], 'Saturday': [5, ['saturday', 'sat']],
+        'Sunday': [6, ['sunday', 'sun']]}    
 months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
+requirements = ['day', 'date', 'month', 'time']
 
 #FIREBASE_URL = "https://pronto-health.firebaseio.com/"
 #fb = firebase.FirebaseApplication(FIREBASE_URL, None) # Create a reference to the Firebase Application
@@ -43,49 +44,22 @@ def send_sms(to_number, message_body):
         body=message_body    
     ) 
 
-def message_client(message_body, message_log, appt_set):
+def message_client(message_body, message_log, appt):
     twml = twiml.Response()
     twml.message(message_body)
 
     resp = make_response(str(twml))
 
-    expires = datetime.utcnow() + timedelta(hours=4)
+    expires = datetime.utcnow() + timedelta(hours=24)
     resp.set_cookie('message_log', value= str(message_log), expires=expires.strftime('%a, %d %b %Y %H:%M:%S GMT'))
-    resp.set_cookie('appt_set', value= str(appt_set), expires=expires.strftime('%a, %d %b %Y %H:%M:%S GMT'))
+    for requirement in requirements:
+        resp.set_cookie('appt_{}'.format(requirement), value=str(appt[requirement]), expires=expires.strftime('%a, %d %b %Y %H:%M:%S GMT'))
+
+    resp.set_cookie('appt_date', value= str(appt_set), expires=expires.strftime('%a, %d %b %Y %H:%M:%S GMT'))
     return resp
 
-@app.route("/", methods=['GET', 'POST'])
-def receieve_sms():
-    report_back = False
-
-    from_number = request.values.get('From', None)
-    body = request.values.get('Body', '')
-    response = 'hello'
-    previous_message = request.cookies.get('previous_message', 'None')
-    message_log = request.cookies.get('message_log', '')
-    appt_set = request.cookies.get('appt_set', '')
-    to_number = velina_number 
-
-    update_appt = '{} {}'.format(appt_set, '')
-
-    if body.lower().find('between') > -1 or body.lower().find('help') > -1 or body.lower().find('options') > -1:
-        update_log = '{} \n {} \n {}'.format(message_log, body, 'AWAITING RESPONSE')
-        send_sms(to_number, update_log)
-
-    update_log = '{} \n {} \n {}'.format(message_log, body, response)
-    twiml_body = message_client(response, update_log, update_appt)
-
-    wanted_days = []
-    for (key, abbrev) in [(key, abbrev) for key, abbrevs in days.items() for abbrev in abbrevs[1]]:
-        if body.lower().find(abbrev) > -1:
-            wanted_days.append(key)
-
-
-    #if 
-
-
+def get_time(body):
     time = None
-    wanted_time = {}
     if body.find('am') > -1 or body.find('pm') > -1:
         time_pos = body.find('am') or body.find('pm')
         if body.find(':') > -1:
@@ -99,7 +73,7 @@ def receieve_sms():
             time = {
                 'text': body[time_pos-1:time_pos+3],
                 'hour': int(body[time_pos-1]),
-                'minute': 0,
+                'minute': '00',
             }
         time['add'] = body[time_pos:time_pos+3]
     else:
@@ -111,27 +85,111 @@ def receieve_sms():
                 'add': ''
             }
     if time:
-        if body.lower().find('before') > -1:
+        if body.find('before') > -1:
             time['hour'] = time['hour'] - 1
             #response = 'Ok, you are scheduled for {}'.format(time)
-        elif body.lower().find('after') > -1:
+        elif body.find('after') > -1:
             time['hour'] = time['hour'] + 1
         else:
             time['hour']
 
-    if body.lower() == 'yes':
-        response = 'Please text back days next week (Monday-Sunday) during which you would be able to schedule an appointment, or "more options" if next week does not work for you.'
+    return time
+
+@app.route("/", methods=['GET', 'POST'])
+def receieve_sms():
+    appt = {}
+    today = date.today()
+    next_week = today.isocalendar()[1] + 1
     
-    if body.lower().find('where') >-1:
-        response = response + '\n We are located at 13768 Roswell Ave. in Chino off the 71'
+    from_number = request.values.get('From', None)
+    body = request.values.get('Body', '').lower()
+    response = ''
+    #previous_message = request.cookies.get('previous_message', 'None')
+    message_log = request.cookies.get('message_log', '')
+    
+    for requirement in requirements:
+        appt[requirement] = request.cookies.get('appt_{}'.format(requirement), -1)
+   
+    to_number = velina_number 
+
+    #update_appt = '{} {}'.format(appt_set, '')
+
+    if body.find('between') > -1 or body.find('help') > -1 or body.find('options') > -1 or body.find('dec') > -1 or body.find('insurance') > -1:
+        update_log = '{} --{} --{}'.format(message_log, body, 'AWAITING RESPONSE')
+        send_sms(to_number, update_log)
+        return 'OK'
+
+    if body.find('where') >-1:
+        response = response + '\n We are located at 13768 Roswell Ave. in Chino off the 71.'
+    
+    all_info_here = True if appt['time'] != -1 and appt['day'] != -1 else False
+
+    if appt['time'] == -1:
+        wanted_time = get_time(body)
+            if wanted_time:
+                if wanted_time['hour'] in range(8,12) and wanted_time['add'] != 'pm':
+                    appt['time'] = '{}:{} {}'.format(wanted_time['hour'], wanted_time['minute'], wanted_time['add'])
+                else:
+                    update_log = '{} --{} --{}'.format(message_log, body, 'AWAITING RESPONSE')
+                    send_sms(to_number, update_log)
+                    return 'OK' 
+
+    if appt['day'] == -1:
+        wanted_days = []
+        fulldate=None
+        for (key, abbrev) in [(key, abbrev) for key, abbrevs in days.items() for abbrev in abbrevs[1]]:
+            if body.find(abbrev) > -1:
+                wanted_days.append(key)
+
+                weekday = wanted_days[0]
+                weekday_num = (days[weekday][0]+1)%7
+                fulldate = datetime.strptime('2016-{}-{}'.format(next_week,weekday_num), '%Y-%W-%w')
+                date = fulldate.day
+                month = fulldate.month
+
+        if body.find('12/') > -1:
+            date_text = body[body.find('12/'):body.find('12/')+6]
+            date_text2 = date_text.split(' ')[0]
+            fulldate = datetime.strptime('{}/2016'.format(date_text2), '%m/%d/%Y')
+            weekday = date.strftime('%A')
+            date = fulldate.day
+            month = fulldate.month
+
+        if fulldate:
+            appt['day'] = weekday
+            appt['date'] = date
+            appt['month'] = month
+
+    
+
+    if body == 'yes':
+        response = response + "Please text back days next week (Monday-Sunday) when you're free for an appointment, or 'more options' if next week does not work for you."
+    
+    if body == 'confirmed':
+        response = response + "Great, you're confirmed for {} {}/{} at {}. We'll be in touch."format(appt['day'], appt['month'], appt['day'], appt['time'])
+    elif appt['day'] != -1 and appt['time'] == -1:
+        response = response + 'What time on {} would work well for you? Please note we recommend a morning appointment because you will need to fast for 8 hours in advance. The clinic is open 8 am to 5 pm.'.format(appt['day'])
+    elif appt['day'] != -1 and appt['time'] != -1:
+        if all_info_here:
+            update_log = '{} --{} --{}'.format(message_log, body, 'AWAITING RESPONSE')
+            send_sms(to_number, update_log)
+            return 'OK'
+        else:
+            response = response + 'Ok, we can get you in on {} {}/{} at {}. Please text "confirmed" to set this appointment'.format(appt['day'], appt['month'], appt['day'], appt['time'])
     else:
-        response = "Response from {}: {}".format(from_number, body)
-        to_number = velina_number
+        update_log = '{} --{} --{}'.format(message_log, body, 'AWAITING RESPONSE')
+        send_sms(to_number, update_log)
+        return 'OK'
+    # else:
+    #     response = "Response from {}: {}".format(from_number, body)
+    #     to_number = velina_number
 
     #send_sms(to_number, response)
     #send_email(velina_email, from_number, response)
+    update_log = '{} --{} --{}'.format(message_log, body, response)
+    twiml_body = message_client(response, update_log, appt)
     
-    return twiml_body if twiml_body else "OK"
+    return twiml_body 
     
 if __name__ == "__main__":
     app.run(debug=True)
