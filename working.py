@@ -21,15 +21,15 @@ velina_email = 'velina.kozareva@gmail.com'
 #FIREBASE_URL = "https://pronto-health.firebaseio.com/"
 #fb = firebase.FirebaseApplication(FIREBASE_URL, None) # Create a reference to the Firebase Application
 
-"""
-    user_update = {
-        "last_msg_type": "Intro",
-        "nudge_type" : 
-    }
-    fb.patch('/user/' + sender + '/', user_update)
-    user_details = fb.get('/user', sender)
+# """
+#     user_update = {
+#         "last_msg_type": "Intro",
+#         "nudge_type" : 
+#     }
+#     fb.patch('/user/' + sender + '/', user_update)
+#     user_details = fb.get('/user', sender)
  
-"""
+# """
 # @app.route("/")
 # def index():
 #   return "Hello World"
@@ -39,20 +39,20 @@ client = TwilioRestClient(account_sid, auth_token)
 def send_sms(to_number, message_body):
     client.messages.create(
         to=to_number, 
-        from_=from_number,
+        from=from_number,
         body=message_body    
     ) 
 
-def send_email(to_email, from_number, message_body):
-    sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
-    from_email = velina_email
-    subject = "Hello World from the SendGrid Python Library!"
-    content = Content("text/plain", "Hello, Email!")
-    mail = Mail(from_email, subject, to_email, content)
-    response = sg.client.mail.send.post(request_body=mail.get())
-    print(response.status_code)
-    print(response.body)
-    print(response.headers)   
+# def send_email(to_email, from_number, message_body):
+#     sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
+#     from_email = velina_email
+#     subject = "Hello World from the SendGrid Python Library!"
+#     content = Content("text/plain", "Hello, Email!")
+#     mail = Mail(from_email, subject, to_email, content)
+#     response = sg.client.mail.send.post(request_body=mail.get())
+#     print(response.status_code)
+#     print(response.body)
+#     print(response.headers)   
 
 # def send_email(to_email, from_number, message_body):
 #     msg = MIMEText(message_body, 'plain')
@@ -69,7 +69,7 @@ def receieve_sms():
     from_number = request.values.get('From', None)
     body = request.values.get('Body', None)
     forward = "Response from {}: {}".format(from_number, body)
-    to_number = from_number 
+    to_number = velina_number 
 
     # if body.lower() == 'yes':
     #     forward = 'Please text back days next week (Monday-Friday) during which you would be able to schedule an appointment, "where" if you would like to know where the clinic is located, or "more info" if you have questions about insurance or other details.'
