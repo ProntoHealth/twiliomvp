@@ -164,7 +164,11 @@ def receieve_sms():
 
     if body == 'yes':
         response = response + "Please text back days next week (Monday-Sunday) when you're free for an appointment, or 'more options' if next week does not work for you."
+        
+        update_log = '{} --{} --{}'.format(message_log, body, response)
+        twiml_body = message_client(response, update_log, appt)
     
+        return twiml_body
     if body == 'confirmed':
         response = response + 'Great, you are confirmed for {} {}/{} at {}. We will be in touch.'.format(appt['day'], appt['month'], appt['day'], appt['time'])
     elif appt['day'] != -1 and appt['time'] == -1:
