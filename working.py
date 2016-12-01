@@ -108,7 +108,7 @@ def receieve_sms():
     message_log = request.cookies.get('message_log', '')
     
     for requirement in requirements:
-        appt[requirement] = request.cookies.get('appt_{}'.format(requirement), -1)
+        appt[requirement] = request.cookies.get('appt_{}'.format(requirement), 'NA')
    
     to_number = velina_number 
 
@@ -124,7 +124,7 @@ def receieve_sms():
     
     all_info_here = True if appt['time'] != -1 and appt['day'] != -1 else False
 
-    if appt['time'] == -1:
+    if appt['time'] == 'NA':
         wanted_time = get_time(body)
         if wanted_time:
             if wanted_time['hour'] in range(8,12) and wanted_time['add'] != 'pm':
@@ -134,7 +134,7 @@ def receieve_sms():
                 send_sms(to_number, update_log)
                 return 'OK' 
 
-    if appt['day'] == -1:
+    if appt['day'] == 'NA':
         hold=True
         wanted_days = []
         fulldate=None
@@ -173,9 +173,9 @@ def receieve_sms():
         return twiml_body
     if body == 'confirmed':
         response = response + 'Great, you are confirmed for {} {}/{} at {}. We will be in touch.'.format(appt['day'], appt['month'], appt['day'], appt['time'])
-    elif appt['day'] != -1 and appt['time'] == -1:
+    elif appt['day'] != 'NA' and appt['time'] == 'NA':
         response = response + 'What time on {} would work well for you? Please note we recommend a morning appointment because you will need to fast for 8 hours in advance. The clinic is open 8 am to 5 pm.'.format(appt['day'])
-    elif appt['day'] != -1 and appt['time'] != -1:
+    elif appt['day'] != 'NA' and appt['time'] != 'NA':
         if all_info_here:
             update_log = '{} --{} --{}'.format(message_log, body, type(appt['day']))
             send_sms(to_number, update_log)
