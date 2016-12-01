@@ -17,7 +17,7 @@ from_number = "+19092199424"
 lynn_number = "+19095291698"
 velina_number = '+18036736204'
 velina_email = 'velina.kozareva@gmail.com'
-days = {'Monday':[1, ['monday', 'mon'], 'Tuesday': [2, ['tuesday', 'tues', 'tue']], 'Wednesday': [3, ['wednesday', 'wed']], 
+days = {'Monday':[1, ['monday', 'mon']], 'Tuesday': [2, ['tuesday', 'tues', 'tue']], 'Wednesday': [3, ['wednesday', 'wed']], 
         'Thursday': [4, ['thursday', 'thurs', 'thur']], 'Friday': [5, ['friday', 'fri']], 'Saturday': [6, ['saturday', 'sat']],
         'Sunday': [0, ['sunday', 'sun']]}    
 months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
