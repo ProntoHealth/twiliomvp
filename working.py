@@ -70,7 +70,7 @@ def send_sms(to_number, message_body):
 @app.route("/", methods=['GET', 'POST'])
 def receieve_sms():
     from_number = request.values.get('From', None)
-    body = request.values.get('Body', None)
+    body = request.values.get('Body', '')
     forward = "Response from {}: {}".format(from_number, body)
     to_number = from_number 
 
