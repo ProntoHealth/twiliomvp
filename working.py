@@ -54,6 +54,7 @@ def message_client(message_body, previous_message):
 
     expires = datetime.utcnow() + timedelta(hours=4)
     resp.set_cookie('previous_message', value= str(previous_message), expires=expires.strftime('%a, %d %b %Y %H:%M:%S GMT'))
+    return resp
 # def send_email(to_email, from_number, message_body):
 #     sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
 #     from_email = velina_email
@@ -84,7 +85,7 @@ def receieve_sms():
     to_number = from_number 
 
     text_return = 'Your previous message was {}'.format(previous_message)
-    message_client(text_return, body)
+    twiml_body = message_client(text_return, body)
 
     time = None
     if body.find('pm') > -1 or body.find('am') > -1:
@@ -115,7 +116,8 @@ def receieve_sms():
 
     #send_sms(to_number, forward)
     #send_email(velina_email, from_number, forward)
-    return "OK"
+    
+    return twiml_body if twiml_body else "OK"
 
     # resp = twilio.twiml.Response()
     # resp.message("Hello, Mobile Monkey")
