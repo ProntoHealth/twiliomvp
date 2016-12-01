@@ -1,7 +1,7 @@
 '''Receive messages through twilio API and send to gmail'''
 
 from flask import Flask, request, redirect, make_response
-import twilio.twiml
+from twilio import twiml
 from twilio.rest import TwilioRestClient
 from datetime import datetime, timedelta
 # import sendgrid
