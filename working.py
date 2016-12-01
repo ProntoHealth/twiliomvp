@@ -126,13 +126,13 @@ def receieve_sms():
 
     if appt['time'] == -1:
         wanted_time = get_time(body)
-            if wanted_time:
-                if wanted_time['hour'] in range(8,12) and wanted_time['add'] != 'pm':
-                    appt['time'] = '{}:{} {}'.format(wanted_time['hour'], wanted_time['minute'], wanted_time['add'])
-                else:
-                    update_log = '{} --{} --{}'.format(message_log, body, 'AWAITING RESPONSE')
-                    send_sms(to_number, update_log)
-                    return 'OK' 
+        if wanted_time:
+            if wanted_time['hour'] in range(8,12) and wanted_time['add'] != 'pm':
+                appt['time'] = '{}:{} {}'.format(wanted_time['hour'], wanted_time['minute'], wanted_time['add'])
+            else:
+                update_log = '{} --{} --{}'.format(message_log, body, 'AWAITING RESPONSE')
+                send_sms(to_number, update_log)
+                return 'OK' 
 
     if appt['day'] == -1:
         wanted_days = []
