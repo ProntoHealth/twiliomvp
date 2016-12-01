@@ -55,7 +55,7 @@ def message_client(message_body, message_log, appt):
     for requirement in requirements:
         resp.set_cookie('appt_{}'.format(requirement), value=str(appt[requirement]), expires=expires.strftime('%a, %d %b %Y %H:%M:%S GMT'))
 
-    resp.set_cookie('appt_date', value= str(appt_set), expires=expires.strftime('%a, %d %b %Y %H:%M:%S GMT'))
+    #resp.set_cookie('appt_date', value= str(appt), expires=expires.strftime('%a, %d %b %Y %H:%M:%S GMT'))
     return resp
 
 def get_time(body):
