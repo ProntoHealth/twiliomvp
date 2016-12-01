@@ -39,7 +39,7 @@ client = TwilioRestClient(account_sid, auth_token)
 def send_sms(to_number, message_body):
     client.messages.create(
         to=to_number, 
-        from=from_number,
+        from_=from_number,
         body=message_body    
     ) 
 
