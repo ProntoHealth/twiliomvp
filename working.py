@@ -23,6 +23,8 @@ days = {'Monday':[0, ['monday', 'mon']], 'Tuesday': [1, ['tuesday', 'tues', 'tue
 months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
 requirements = ['day', 'date', 'month', 'time']
 
+today = date.today()
+next_week = today.isocalendar()[1] + 1
 #FIREBASE_URL = "https://pronto-health.firebaseio.com/"
 #fb = firebase.FirebaseApplication(FIREBASE_URL, None) # Create a reference to the Firebase Application
 
@@ -122,8 +124,6 @@ def get_date(body):
 @app.route("/", methods=['GET', 'POST'])
 def receieve_sms():
     appt = {}
-    today = date.today()
-    next_week = today.isocalendar()[1] + 1
     
     from_number = request.values.get('From', None)
     body = request.values.get('Body', '').lower()
@@ -175,7 +175,7 @@ def receieve_sms():
         twiml_body = message_client(response, update_log, appt)
     
         return twiml_body
-        
+
     if body.find('confirmed') > -1:
         response = response + 'Great, you are confirmed for {} {}/{} at {}. We will be in touch.'.format(appt['day'], appt['month'], appt['day'], appt['time'])
     elif str(appt['day']) != '-1' and str(appt['time']) == '-1':
