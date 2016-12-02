@@ -97,7 +97,8 @@ def get_time(body):
 
 def get_date(body):
     wanted_days = []
-    fulldate=None, weekday = None
+    fulldate=None
+    weekday=None
     for (key, abbrev) in [(key, abbrev) for key, value in days.items() for abbrev in value[1]]:
         if body.find(abbrev) > -1:
             wanted_days.append(key)
