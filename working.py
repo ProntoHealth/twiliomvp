@@ -168,7 +168,7 @@ def receieve_sms():
             appt['date'] = monthdate
             appt['month'] = month
 
-    if body.find('yes') > -1:
+    if body.find('yes') > -1 and not all_info_here:
         response = response + "Please text back days next week (Monday-Sunday) when you're free for an appointment, or 'more options' if next week does not work for you."
         
         update_log = '{} --{} --{}'.format(message_log, body, response)
@@ -177,7 +177,7 @@ def receieve_sms():
         return twiml_body
 
     if body.find('confirmed') > -1:
-        response = response + 'Great, you are confirmed for {} {}/{} at {}. We will be in touch.'.format(appt['day'], appt['month'], appt['day'], appt['time'])
+        response = response + 'Great, you are confirmed for {} {}/{} at {}. We will be in touch.'.format(appt['day'], appt['month'], appt['date'], appt['time'])
     elif str(appt['day']) != '-1' and str(appt['time']) == '-1':
         response = response + 'What time on {} {}/{} would work well for you? Please note we recommend a morning appointment because you will need to fast for 8 hours in advance. The clinic is open 8 am to 5 pm.'.format(appt['day'], appt['month'], appt['date'])
     elif str(appt['day']) != '-1' and str(appt['time']) != '-1':
