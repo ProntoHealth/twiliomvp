@@ -72,11 +72,14 @@ def get_time(body):
                 'minute': int(body[body.find(':')+1:body.find(':')+3]),
             }
         else:
-            time = {
-                'text': body[time_pos-1:time_pos+3],
-                'hour': int(body[time_pos-1]),
-                'minute': '00',
-            }
+            if body[time_pos-1].isdigit():
+                time = {
+                    'text': body[time_pos-1:time_pos+3],
+                    'hour': int(body[time_pos-1]),
+                    'minute': '00',
+                }
+            else:
+                return {'hold': 'empty'}
         time['add'] = body[time_pos:time_pos+3]
     else:
         if body.find(':') > -1:
@@ -147,13 +150,13 @@ def receieve_sms():
         twiml_body = message_client(response, update_log, appt)
     
         return twiml_body
-        
+
     all_info_here = True if str(appt['time']) != '-1' and str(appt['day']) != '-1' else False
 
     if str(appt['time']) == '-1':
         wanted_time = get_time(body)
         if wanted_time:
-            if wanted_time['hour'] in range(8,12) and wanted_time['add'] != 'pm':
+            if wanted_time.get('hour') in range(8,12) and wanted_time['add'] != 'pm':
                 appt['time'] = '{}:{} {}'.format(wanted_time['hour'], wanted_time['minute'], wanted_time['add'])
             else:
                 update_log = '{} --{} --{}'.format(message_log, body, 'AWAITING RESPONSE')
