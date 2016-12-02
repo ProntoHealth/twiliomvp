@@ -52,7 +52,7 @@ def message_client(message_body, message_log, appt):
 
     resp = make_response(str(twml))
 
-    expires = datetime.utcnow() + timedelta(hours=24)
+    expires = datetime.utcnow() + timedelta(hours=12)
     resp.set_cookie('message_log', value= str(message_log), expires=expires.strftime('%a, %d %b %Y %H:%M:%S GMT'))
     for requirement in requirements:
         resp.set_cookie('appt_{}'.format(requirement), value=str(appt[requirement]), expires=expires.strftime('%a, %d %b %Y %H:%M:%S GMT'))
@@ -63,7 +63,7 @@ def message_client(message_body, message_log, appt):
 def get_time(body):
     time = None
     if body.find('am') > -1 or body.find('pm') > -1:
-        time_pos = body.find('am') or body.find('pm')
+        time_pos = body.find('am') if body.find('am') > -1 else body.find('pm')
         if body.find(':') > -1:
             # +6 to account for space between time and 'pm'/'am'
             time = {
@@ -92,9 +92,6 @@ def get_time(body):
             #response = 'Ok, you are scheduled for {}'.format(time)
         elif body.find('after') > -1:
             time['hour'] = time['hour'] + 1
-        else:
-            time['hour']
-
     return time
 
 def get_date(body):
@@ -110,7 +107,7 @@ def get_date(body):
         weekday_num = (days[weekday][0]+1)%7
         fulldate = datetime.strptime('2016-{}-{}'.format(next_week,weekday_num), '%Y-%W-%w')
         
-
+    # specifically for december
     if body.find('12/') > -1:
         date_text = body[body.find('12/'):body.find('12/')+6]
         date_text2 = date_text.split(' ')[0]
@@ -134,7 +131,7 @@ def receieve_sms():
     for requirement in requirements:
         appt[requirement] = request.cookies.get('appt_{}'.format(requirement), '-1')
    
-    to_number = velina_number 
+    to_number = lynn_number 
 
     #update_appt = '{} {}'.format(appt_set, '')
 
@@ -145,7 +142,12 @@ def receieve_sms():
 
     if body.find('where') >-1:
         response = response + '\n We are located at 13768 Roswell Ave. in Chino off the 71.'
+        
+        update_log = '{} --{} --{}'.format(message_log, body, response)
+        twiml_body = message_client(response, update_log, appt)
     
+        return twiml_body
+        
     all_info_here = True if str(appt['time']) != '-1' and str(appt['day']) != '-1' else False
 
     if str(appt['time']) == '-1':
