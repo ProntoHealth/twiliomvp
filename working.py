@@ -95,6 +95,29 @@ def get_time(body):
 
     return time
 
+def get_date(body):
+    wanted_days = []
+    fulldate=None, weekday = None
+    for (key, abbrev) in [(key, abbrev) for key, value in days.items() for abbrev in value[1]]:
+        if body.find(abbrev) > -1:
+            wanted_days.append(key)
+
+    if wanted_days:
+        weekday = wanted_days[0]
+        weekday_num = (days[weekday][0]+1)%7
+        fulldate = datetime.strptime('2016-{}-{}'.format(next_week,weekday_num), '%Y-%W-%w')
+        
+
+    if body.find('12/') > -1:
+        date_text = body[body.find('12/'):body.find('12/')+6]
+        date_text2 = date_text.split(' ')[0]
+        fulldate = datetime.strptime('{}/2016'.format(date_text2), '%m/%d/%Y')
+        weekday = fulldate.strftime("%A")
+        monthdate = fulldate.day
+        month = fulldate.month
+
+    return fulldate, weekday
+
 @app.route("/", methods=['GET', 'POST'])
 def receieve_sms():
     appt = {}
@@ -122,7 +145,7 @@ def receieve_sms():
     if body.find('where') >-1:
         response = response + '\n We are located at 13768 Roswell Ave. in Chino off the 71.'
     
-    all_info_here = True if appt['time'] != '-1' and appt['day'] != '-1' else False
+    all_info_here = True if str(appt['time']) != '-1' and str(appt['day']) != '-1' else False
 
     if str(appt['time']) == '-1':
         wanted_time = get_time(body)
@@ -134,35 +157,15 @@ def receieve_sms():
                 send_sms(to_number, update_log)
                 return 'OK' 
 
-    if str(appt['day']) == 'Tuesday':
-        hold=True
-        wanted_days = []
-        fulldate=None
-        for (key, abbrev) in [(key, abbrev) for key, value in days.items() for abbrev in value[1]]:
-            if body.find(abbrev) > -1:
-                wanted_days.append(key)
-
-        if wanted_days:
-            weekday = wanted_days[0]
-            weekday_num = (days[weekday][0]+1)%7
-            fulldate = datetime.strptime('2016-{}-{}'.format(next_week,weekday_num), '%Y-%W-%w')
-            monthdate = fulldate.day
-            month = fulldate.month
-
-        if body.find('12/') > -1:
-            date_text = body[body.find('12/'):body.find('12/')+6]
-            date_text2 = date_text.split(' ')[0]
-            fulldate = datetime.strptime('{}/2016'.format(date_text2), '%m/%d/%Y')
-            weekday = fulldate.strftime("%A")
-            monthdate = fulldate.day
-            month = fulldate.month
+    if str(appt['day']) == '-1':
+        fulldate, weekday = get_date(body)
 
         if fulldate:
+            monthdate = fulldate.day
+            month = fulldate.month
             appt['day'] = weekday
             appt['date'] = monthdate
             appt['month'] = month
-
-    
 
     if body == 'yes':
         response = response + "Please text back days next week (Monday-Sunday) when you're free for an appointment, or 'more options' if next week does not work for you."
@@ -174,10 +177,10 @@ def receieve_sms():
     if body == 'confirmed':
         response = response + 'Great, you are confirmed for {} {}/{} at {}. We will be in touch.'.format(appt['day'], appt['month'], appt['day'], appt['time'])
     elif str(appt['day']) != '-1' and str(appt['time']) == '-1':
-        response = response + 'What time on {} would work well for you? Please note we recommend a morning appointment because you will need to fast for 8 hours in advance. The clinic is open 8 am to 5 pm.'.format(appt['day'])
-    elif appt['day'] != '-1' and appt['time'] != '-1':
+        response = response + 'What time on {} {}/{} would work well for you? Please note we recommend a morning appointment because you will need to fast for 8 hours in advance. The clinic is open 8 am to 5 pm.'.format(appt['day'], appt['month'], appt['date'])
+    elif str(appt['day']) != '-1' and str(appt['time']) != '-1':
         if all_info_here:
-            update_log = '{} --{} --{}'.format(message_log, body, str(appt['day']))
+            update_log = '{} --{} --{}'.format(message_log, body, 'AWAITING RESPONSE')
             send_sms(to_number, update_log)
             return 'OK'
         else:
