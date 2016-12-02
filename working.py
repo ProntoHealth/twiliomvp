@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, date
 app = Flask(__name__)
 account_sid = "AC471b4009becda2f23c3fe90df58dd7cc"
 auth_token = "dae6dc2569f846ab2b9e2404c7b1d876"
-from_number = "+19092199424"
+log_from_number = "+19092199424"
 lynn_number = "+19095291698"
 velina_number = '+18036736204'
 velina_email = 'velina.kozareva@gmail.com'
@@ -39,11 +39,11 @@ next_week = today.isocalendar()[1] + 1
 """
 
 client = TwilioRestClient(account_sid, auth_token)
-def send_sms(to_number, message_body):
+def send_sms(to_number, message_body, responder):
     client.messages.create(
         to=to_number, 
-        from_=from_number,
-        body=message_body    
+        from_=log_from_number,
+        body='{} From: {}'.format(message_body, responder)    
     ) 
 
 def message_client(message_body, message_log, appt):
@@ -138,9 +138,9 @@ def receieve_sms():
 
     #update_appt = '{} {}'.format(appt_set, '')
 
-    if body.find('between') > -1 or body.find('help') > -1 or body.find('options') > -1 or body.find('dec') > -1 or body.find('insurance') > -1:
+    if body.find('between') > -1 or body.find('help') > -1 or body.find('options') > -1 or body.find('dec') > -1 or body.find('insurance') > -1 or body.find('unsubscribe') > -1:
         update_log = '{} --{} --{}'.format(message_log, body, 'AWAITING RESPONSE')
-        send_sms(to_number, update_log)
+        send_sms(to_number, update_log, from_number)
         return 'OK'
 
     if body.find('where') >-1:
@@ -155,7 +155,7 @@ def receieve_sms():
                 appt['time'] = '{}:{} {}'.format(wanted_time['hour'], wanted_time['minute'], wanted_time['add'])
             else:
                 update_log = '{} --{} --{}'.format(message_log, body, 'AWAITING RESPONSE')
-                send_sms(to_number, update_log)
+                send_sms(to_number, update_log, from_number)
                 return 'OK' 
 
     if str(appt['day']) == '-1':
@@ -183,13 +183,13 @@ def receieve_sms():
     elif str(appt['day']) != '-1' and str(appt['time']) != '-1':
         if all_info_here:
             update_log = '{} --{} --{}'.format(message_log, body, 'AWAITING RESPONSE')
-            send_sms(to_number, update_log)
+            send_sms(to_number, update_log, from_number)
             return 'OK'
         else:
             response = response + 'Ok, we can get you in on {} {}/{} at {}. Please text "confirmed" to set this appointment.'.format(appt['day'], appt['month'], appt['date'], appt['time'])
     else:
         update_log = '{} --{} --{}'.format(message_log, body, 'AWAITING RESPONSE')
-        send_sms(to_number, update_log)
+        send_sms(to_number, update_log, from_number)
         return 'OK'
     # else:
     #     response = "Response from {}: {}".format(from_number, body)
