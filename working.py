@@ -144,7 +144,7 @@ def receieve_sms():
         return 'OK'
 
     if body.find('where') >-1:
-        response = response + '\n We are located at 13768 Roswell Ave. in Chino off the 71.'
+        response = response + '\n We are located at 13768 Roswell Ave. #118 in Chino off the 71.'
         
         update_log = '{} --{} --{}'.format(message_log, body, response)
         twiml_body = message_client(response, update_log, appt)
