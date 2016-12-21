@@ -136,11 +136,13 @@ def receieve_sms():
    
     to_number = lynn_number 
 
-    #comment this area out to turn chatbot on#
+    """
+    #comment this area out to turn chatbot on
     update_log = '{} --{} --{}'.format(message_log, body, 'AWAITING RESPONSE')
     send_sms(to_number, update_log, from_number)
     return 'OK'
     #end of chatbot comment area#
+    """
 
     #update_appt = '{} {}'.format(appt_set, '')
 
